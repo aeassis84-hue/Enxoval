@@ -3,611 +3,660 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Enxoval do Bebê 🍼</title>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<title>Garagem — Comparador de Carros</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --bg: #fdf6f0; --surface: #fff9f5; --card: #ffffff;
-    --accent: #e8a598; --accent2: #b5d5c5; --accent3: #f5c7a9;
-    --text: #3a2e2a; --text-muted: #9a8880; --border: #f0e0d8;
-    --pending: #f5c7a9; --pending-text: #8b4513;
-    --bought: #b5d5c5; --bought-text: #2d6a4f;
-    --unavail: #ddd; --unavail-text: #666;
-    --shadow: 0 4px 24px rgba(200,140,120,0.10); --radius: 16px;
+  :root{
+    --bg: #1b1f24;
+    --panel: #23282f;
+    --panel-2: #2b3138;
+    --line: #383f47;
+    --text: #e8eaed;
+    --muted: #9aa3ac;
+    --amber: #ffb020;
+    --amber-dim: #7a5b1c;
+    --green: #3ddc84;
+    --red: #ff5d5d;
+    --blue: #4fb0ff;
   }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { background: var(--bg); font-family: 'DM Sans', sans-serif; color: var(--text); min-height: 100vh; }
+  *{box-sizing:border-box;}
+  body{margin:0;}
+  html,body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:'Inter',sans-serif;
+    min-height:100vh;
+  }
+  .mono{font-family:'JetBrains Mono',monospace;}
+  .display{font-family:'Rajdhani',sans-serif;text-transform:uppercase;letter-spacing:0.03em;}
 
-  #loading-overlay { position: fixed; inset: 0; background: var(--bg); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 9999; transition: opacity 0.4s; }
-  #loading-overlay.hide { opacity: 0; pointer-events: none; }
-  .loading-spinner { width: 48px; height: 48px; border: 4px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; margin-bottom: 16px; }
-  @keyframes spin { to { transform: rotate(360deg); } }
+  /* Header / dash strip */
+  header{
+    background:linear-gradient(180deg, #21252b 0%, #1b1f24 100%);
+    border-bottom:2px solid var(--amber);
+    padding:22px 24px 18px;
+    position:sticky; top:0; z-index:20;
+  }
+  header .wrap{
+    max-width:1100px; margin:0 auto;
+    display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:14px;
+  }
+  .brand{display:flex; align-items:center; gap:12px;}
+  .brand .dial{
+    width:38px; height:38px; border-radius:50%;
+    border:3px solid var(--amber);
+    display:flex; align-items:center; justify-content:center;
+    position:relative;
+    background:conic-gradient(var(--amber) 0deg 260deg, var(--line) 260deg 360deg);
+  }
+  .brand .dial::after{
+    content:''; width:22px; height:22px; border-radius:50%; background:var(--bg);
+  }
+  .brand h1{
+    font-size:24px; margin:0; font-weight:700;
+  }
+  .brand p{margin:0; color:var(--muted); font-size:12.5px; letter-spacing:0.08em;}
 
-  .header { background: linear-gradient(135deg, #f9e4da 0%, #e8d5c4 100%); padding: 28px 24px 18px; text-align: center; border-bottom: 2px solid var(--border); position: relative; overflow: hidden; }
-  .header::before { content: '🌸'; position: absolute; top: 10px; left: 20px; font-size: 32px; opacity: 0.3; }
-  .header::after  { content: '🍼'; position: absolute; top: 10px; right: 20px; font-size: 32px; opacity: 0.3; }
-  .header h1 { font-family: 'Playfair Display', serif; font-size: clamp(24px,5vw,38px); color: var(--text); letter-spacing: 1px; }
-  .header-sub { display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 4px; }
-  .header p  { color: var(--text-muted); font-size: 13px; }
-  .sync-badge { display: inline-flex; align-items: center; gap: 5px; background: rgba(255,255,255,0.6); border: 1px solid var(--border); border-radius: 20px; padding: 3px 10px; font-size: 11px; color: var(--text-muted); }
-  .sync-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent2); animation: pulse 2s infinite; flex-shrink: 0; }
-  @keyframes pulse { 0%,100%{opacity:1;transform:scale(1);}50%{opacity:0.5;transform:scale(1.3);} }
+  nav.tabs{
+    display:flex; gap:6px; background:var(--panel); padding:5px; border-radius:10px; border:1px solid var(--line);
+  }
+  nav.tabs button{
+    font-family:'Rajdhani',sans-serif; text-transform:uppercase; letter-spacing:0.04em;
+    font-weight:700; font-size:14px;
+    background:transparent; border:none; color:var(--muted);
+    padding:9px 18px; border-radius:7px; cursor:pointer;
+    transition:background .15s, color .15s;
+  }
+  nav.tabs button.active{ background:var(--amber); color:#1b1f24; }
+  nav.tabs button:not(.active):hover{ color:var(--text); background:var(--panel-2); }
 
-  .summary { display: flex; flex-wrap: wrap; gap: 14px; padding: 18px 24px; background: var(--surface); border-bottom: 1px solid var(--border); justify-content: center; }
-  .summary-card { background: var(--card); border-radius: var(--radius); padding: 14px 22px; text-align: center; box-shadow: var(--shadow); flex: 1; min-width: 130px; max-width: 200px; border: 1.5px solid var(--border); transition: transform 0.2s; }
-  .summary-card:hover { transform: translateY(-2px); }
-  .summary-card .label { font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--text-muted); font-weight: 600; }
-  .summary-card .value { font-family: 'Playfair Display', serif; font-size: 24px; color: var(--text); margin-top: 4px; }
-  .summary-card.highlight .value { color: #c0704a; }
-  .summary-card.bought-card .value { color: #2d6a4f; }
+  main{max-width:1100px; margin:0 auto; padding:28px 24px 80px;}
+  .view{display:none;}
+  .view.active{display:block;}
 
-  .toolbar { display: flex; flex-wrap: wrap; gap: 10px; padding: 14px 24px; background: var(--surface); align-items: flex-end; border-bottom: 1px solid var(--border); }
-  .toolbar-group { display: flex; flex-direction: column; gap: 4px; }
-  .toolbar-group label { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); font-weight: 600; }
-  .toolbar select { border: 1.5px solid var(--border); border-radius: 10px; padding: 8px 14px; font-family: 'DM Sans', sans-serif; font-size: 13px; background: var(--card); color: var(--text); min-width: 140px; outline: none; transition: border 0.2s; }
-  .toolbar select:focus { border-color: var(--accent); }
+  /* Cards / panels */
+  .panel{
+    background:var(--panel); border:1px solid var(--line); border-radius:14px; padding:22px;
+  }
+  .panel + .panel{margin-top:20px;}
+  .panel h2{
+    font-family:'Rajdhani',sans-serif; text-transform:uppercase; letter-spacing:0.05em;
+    font-size:19px; margin:0 0 18px; color:var(--amber); font-weight:700;
+    display:flex; align-items:center; gap:8px;
+  }
+  .panel h2 .n{
+    font-size:12px; background:var(--amber); color:#1b1f24; border-radius:5px; padding:2px 7px;
+    font-family:'JetBrains Mono',monospace;
+  }
 
-  .btn { display: inline-flex; align-items: center; gap: 6px; border: none; border-radius: 10px; cursor: pointer; font-family: 'DM Sans', sans-serif; font-weight: 600; font-size: 13px; padding: 9px 18px; transition: all 0.18s; }
-  .btn-primary { background: var(--accent); color: #fff; }
-  .btn-primary:hover { background: #d9897c; transform: translateY(-1px); }
-  .btn-secondary { background: var(--accent2); color: #2d5a45; }
-  .btn-secondary:hover { background: #9ec9b4; transform: translateY(-1px); }
-  .btn-ghost { background: var(--border); color: var(--text-muted); }
-  .btn-ghost:hover { background: var(--accent3); color: var(--text); }
-  .btn-danger { background: #ffd6d6; color: #b00; }
-  .btn-danger:hover { background: #ffb3b3; }
-  .btn-sm { padding: 5px 11px; font-size: 12px; }
+  /* Form */
+  .grid{
+    display:grid; grid-template-columns:repeat(auto-fit, minmax(220px,1fr)); gap:16px;
+  }
+  .field{display:flex; flex-direction:column; gap:6px;}
+  .field label{
+    font-size:12px; text-transform:uppercase; letter-spacing:0.06em; color:var(--muted); font-weight:600;
+  }
+  .field input[type=text], .field input[type=number], .field input[type=tel], .field input[type=url], .field textarea, .field select{
+    background:var(--panel-2); border:1px solid var(--line); color:var(--text);
+    padding:10px 12px; border-radius:8px; font-size:14.5px; font-family:'Inter',sans-serif;
+    outline:none; transition:border-color .15s;
+  }
+  .field textarea{resize:vertical; min-height:70px; font-family:'Inter',sans-serif;}
+  .field input:focus, .field select:focus, .field textarea:focus{ border-color:var(--amber); }
+  .field.span2{grid-column:span 2;}
+  @media (max-width:600px){ .field.span2{grid-column:span 1;} }
 
-  .table-container { padding: 20px 24px; overflow-x: auto; }
-  table { width: 100%; border-collapse: separate; border-spacing: 0 6px; min-width: 900px; }
-  thead th { font-size: 11px; text-transform: uppercase; letter-spacing: 1.2px; color: var(--text-muted); font-weight: 600; padding: 8px 12px; text-align: left; background: transparent; }
-  tbody tr { background: var(--card); box-shadow: var(--shadow); border-radius: 12px; transition: box-shadow 0.2s, transform 0.15s; }
-  tbody tr:hover { box-shadow: 0 6px 28px rgba(200,140,120,0.16); transform: translateY(-1px); }
-  tbody td { padding: 10px 12px; vertical-align: middle; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
-  tbody td:first-child { border-left: 1px solid var(--border); border-radius: 12px 0 0 12px; }
-  tbody td:last-child  { border-right: 1px solid var(--border); border-radius: 0 12px 12px 0; }
+  .toggle-group{display:flex; gap:8px;}
+  .toggle-group button{
+    flex:1; padding:10px; border-radius:8px; border:1px solid var(--line);
+    background:var(--panel-2); color:var(--muted); font-weight:600; cursor:pointer; font-size:13.5px;
+    transition:all .15s;
+  }
+  .toggle-group button.sel-sim.active{ background:var(--green); color:#0e1a13; border-color:var(--green); }
+  .toggle-group button.sel-nao.active{ background:var(--red); color:#2a0d0d; border-color:var(--red); }
+  .toggle-group button.sel-avaliar.active{ background:var(--blue); color:#0d2233; border-color:var(--blue); }
 
-  .status-badge { display: inline-block; padding: 3px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; white-space: nowrap; }
-  .status-Pendente { background: var(--pending); color: var(--pending-text); }
-  .status-Comprado { background: var(--bought);  color: var(--bought-text); }
-  .status-Não-tem  { background: var(--unavail); color: var(--unavail-text); }
-  .total-cell { font-weight: 700; color: #c0704a; }
-  .qtd-comprada-cell { font-size: 12px; color: var(--bought-text); font-weight: 600; }
+  .actions-row{display:flex; gap:10px; margin-top:22px; flex-wrap:wrap;}
+  .btn{
+    font-family:'Rajdhani',sans-serif; text-transform:uppercase; letter-spacing:0.04em; font-weight:700;
+    font-size:14.5px; padding:11px 20px; border-radius:8px; border:none; cursor:pointer;
+    display:inline-flex; align-items:center; gap:7px; transition:filter .15s, transform .1s;
+  }
+  .btn:active{transform:scale(0.98);}
+  .btn-primary{ background:var(--amber); color:#1b1f24; }
+  .btn-primary:hover{filter:brightness(1.08);}
+  .btn-ghost{ background:transparent; color:var(--muted); border:1px solid var(--line); }
+  .btn-ghost:hover{ color:var(--text); border-color:var(--muted); }
+  .btn-danger{ background:transparent; color:var(--red); border:1px solid #5a2a2a; }
+  .btn-danger:hover{ background:#3a1414; }
 
-  .empty-state { text-align: center; padding: 60px 20px; color: var(--text-muted); }
-  .empty-state .icon { font-size: 48px; margin-bottom: 12px; }
+  /* Filters */
+  .filters-grid{display:grid; grid-template-columns:repeat(auto-fit, minmax(160px,1fr)); gap:14px;}
+  .filters-grid .field select, .filters-grid .field input{padding:8px 10px; font-size:13.5px;}
+  .filters-summary{color:var(--muted); font-size:13px; margin-top:14px;}
 
-  .modal-overlay { position: fixed; inset: 0; background: rgba(60,40,30,0.35); display: flex; align-items: center; justify-content: center; z-index: 1000; backdrop-filter: blur(2px); opacity: 0; pointer-events: none; transition: opacity 0.2s; }
-  .modal-overlay.open { opacity: 1; pointer-events: all; }
-  .modal { background: var(--card); border-radius: 20px; padding: 32px; max-width: 440px; width: 90%; box-shadow: 0 20px 60px rgba(180,100,80,0.18); transform: scale(0.96); transition: transform 0.2s; max-height: 90vh; overflow-y: auto; }
-  .modal-overlay.open .modal { transform: scale(1); }
-  .modal h3 { font-family: 'Playfair Display', serif; font-size: 22px; margin-bottom: 20px; }
-  .modal label { font-size: 12px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); font-weight: 600; display: block; margin-bottom: 4px; }
-  .modal input, .modal select { width: 100%; border: 1.5px solid var(--border); border-radius: 10px; padding: 10px 14px; font-family: 'DM Sans', sans-serif; font-size: 14px; color: var(--text); background: var(--surface); margin-bottom: 16px; outline: none; transition: border 0.2s; }
-  .modal input:focus, .modal select:focus { border-color: var(--accent); }
-  .modal-btns { display: flex; gap: 10px; justify-content: flex-end; margin-top: 4px; }
-  .modal-row { display: flex; gap: 12px; }
-  .modal-row > div { flex: 1; }
+  /* Car cards list */
+  .car-list{display:flex; flex-direction:column; gap:14px; margin-top:20px;}
+  .car-card{
+    background:var(--panel-2); border:1px solid var(--line); border-radius:12px;
+    padding:18px 20px; display:grid; grid-template-columns:auto 1fr auto; gap:18px; align-items:center;
+  }
+  @media (max-width:700px){ .car-card{grid-template-columns:1fr; text-align:left;} }
 
-  .opt-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; max-height: 260px; overflow-y: auto; }
-  .opt-item { display: flex; align-items: center; gap: 8px; background: var(--surface); border: 1.5px solid var(--border); border-radius: 10px; padding: 6px 10px; }
-  .opt-item input { flex: 1; border: none; background: transparent; font-family: 'DM Sans', sans-serif; font-size: 14px; color: var(--text); outline: none; margin-bottom: 0; padding: 2px 4px; }
+  .gauge{
+    width:64px; height:64px; border-radius:50%; position:relative; flex-shrink:0;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .gauge span{
+    font-family:'Rajdhani',sans-serif; font-size:10.5px; font-weight:700; text-transform:uppercase;
+    background:var(--panel); width:44px; height:44px; border-radius:50%;
+    display:flex; align-items:center; justify-content:center; text-align:center; line-height:1.1;
+  }
+  .gauge.sim{ background:conic-gradient(var(--green) 0deg 360deg); }
+  .gauge.sim span{color:var(--green);}
+  .gauge.nao{ background:conic-gradient(var(--red) 0deg 360deg); }
+  .gauge.nao span{color:var(--red);}
+  .gauge.avaliar{ background:conic-gradient(var(--blue) 0deg 360deg); }
+  .gauge.avaliar span{color:var(--blue);}
 
-  .price-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 4px; }
-  .price-row { display: flex; align-items: center; gap: 8px; background: var(--surface); border: 1.5px solid var(--border); border-radius: 10px; padding: 8px 12px; }
-  .price-row span { font-size: 12px; color: var(--text-muted); min-width: 20px; }
-  .price-row input { flex: 1; border: none; background: transparent; font-family: 'DM Sans', sans-serif; font-size: 14px; color: var(--text); outline: none; margin-bottom: 0; padding: 2px 4px; }
+  .car-main h3{ margin:0 0 4px; font-size:19px; font-weight:700; }
+  .car-main .sub{ color:var(--muted); font-size:13px; margin-bottom:8px; }
+  .tag-row{display:flex; gap:8px; flex-wrap:wrap; margin-bottom:8px;}
+  .tag{
+    font-size:11.5px; padding:3px 9px; border-radius:5px; font-weight:600;
+    background:var(--panel); border:1px solid var(--line); color:var(--muted);
+  }
+  .tag.on{ color:var(--amber); border-color:var(--amber-dim); }
+  .price{
+    font-family:'JetBrains Mono',monospace; font-size:20px; font-weight:700; color:var(--amber);
+  }
+  .obs-preview{ color:var(--muted); font-size:12.5px; margin-top:6px; font-style:italic; max-width:480px;}
 
-  @media (max-width: 600px) { .toolbar { padding: 12px; } .table-container { padding: 12px 6px; } .summary { padding: 14px 12px; } }
+  .car-actions{ display:flex; flex-direction:column; gap:8px; min-width:140px; }
+  .icon-btn{
+    display:flex; align-items:center; gap:8px; padding:8px 12px; border-radius:7px;
+    font-size:13px; font-weight:600; text-decoration:none; border:1px solid var(--line);
+    background:var(--panel); color:var(--text); cursor:pointer; justify-content:center;
+  }
+  .icon-btn.wa{ color:#25D366; border-color:#1d5c3d; }
+  .icon-btn.wa:hover{ background:#12261c; }
+  .icon-btn.call{ color:var(--blue); border-color:#1d3c5c; }
+  .icon-btn.call:hover{ background:#0f1f2e; }
+  .icon-btn.link{ color:var(--amber); border-color:var(--amber-dim); }
+  .icon-btn.link:hover{ background:#2c2410; }
+  .icon-btn.edit{ color:var(--muted); }
+  .icon-btn.edit:hover{ color:var(--text); }
+
+  .empty{
+    text-align:center; padding:50px 20px; color:var(--muted);
+  }
+  .empty .dial-big{
+    width:70px; height:70px; border-radius:50%; border:3px dashed var(--line);
+    margin:0 auto 16px; display:flex; align-items:center; justify-content:center; font-size:28px;
+  }
+
+  .toast{
+    position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(20px);
+    background:var(--panel-2); border:1px solid var(--amber); color:var(--text);
+    padding:12px 20px; border-radius:9px; font-size:14px; opacity:0; pointer-events:none;
+    transition:opacity .2s, transform .2s; z-index:50;
+  }
+  .toast.show{ opacity:1; transform:translateX(-50%) translateY(0); }
+
+  ::placeholder{color:#5c636b;}
+
+  @media (prefers-reduced-motion: reduce){
+    *{transition:none !important;}
+  }
 </style>
 </head>
 <body>
 
-<div id="loading-overlay">
-  <div class="loading-spinner"></div>
-  <p style="color:var(--text-muted);font-size:14px;">Carregando dados...</p>
-</div>
-
-<div class="header">
-  <h1>🌸 Enxoval do Bebê</h1>
-  <div class="header-sub">
-    <p>Lista de compras colaborativa</p>
-    <div class="sync-badge">
-      <div class="sync-dot"></div>
-      <span id="update-label">Sincronizado</span>
-    </div>
-  </div>
-</div>
-
-<div class="summary">
-  <div class="summary-card">
-    <div class="label">Total de Itens</div>
-    <div class="value" id="sum-total-itens">0</div>
-  </div>
-  <div class="summary-card highlight">
-    <div class="label">Valor Total</div>
-    <div class="value" id="sum-valor-total">$ 0,00</div>
-  </div>
-  <div class="summary-card bought-card">
-    <div class="label">Já Comprado</div>
-    <div class="value" id="sum-comprado">$ 0,00</div>
-  </div>
-  <div class="summary-card">
-    <div class="label">Pendente</div>
-    <div class="value" id="sum-pendente">$ 0,00</div>
-  </div>
-  <div class="summary-card">
-    <div class="label">Qtd. Comprada</div>
-    <div class="value" id="sum-qtd-comprada">0</div>
-  </div>
-</div>
-
-<div class="toolbar">
-  <div class="toolbar-group">
-    <label>Filtrar Roupa</label>
-    <select id="filter-roupa" onchange="renderTable()"><option value="">Todas</option></select>
-  </div>
-  <div class="toolbar-group">
-    <label>Filtrar Status</label>
-    <select id="filter-status" onchange="renderTable()">
-      <option value="">Todos</option>
-      <option>Pendente</option>
-      <option>Comprado</option>
-      <option>Não tem</option>
-    </select>
-  </div>
-  <div class="toolbar-group">
-    <label>Filtrar Tamanho</label>
-    <select id="filter-tamanho" onchange="renderTable()"><option value="">Todos</option></select>
-  </div>
-  <div style="margin-left:auto;display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end;">
-    <button class="btn btn-ghost" onclick="clearFilters()">↺ Limpar filtros</button>
-    <button class="btn btn-secondary" onclick="openAddModal()">+ Nova linha</button>
-    <button class="btn btn-ghost" onclick="exportCSV()">⬇ Exportar CSV</button>
-  </div>
-</div>
-
-<div class="table-container">
-  <table>
-    <thead>
-      <tr>
-        <th>#</th>
-        <th>Roupa</th>
-        <th>Observação</th>
-        <th>Tamanho</th>
-        <th>Qtd. Total</th>
-        <th>Preços ($ / unid.)</th>
-        <th>Total</th>
-        <th>Qtd. Comprada</th>
-        <th>Status</th>
-        <th>Ações</th>
-      </tr>
-    </thead>
-    <tbody id="table-body"></tbody>
-  </table>
-  <div class="empty-state" id="empty-state" style="display:none">
-    <div class="icon">🍼</div>
-    <p>Nenhum item encontrado. Clique em <strong>+ Nova linha</strong> para começar!</p>
-  </div>
-</div>
-
-<!-- Modal principal -->
-<div class="modal-overlay" id="modal-overlay" onclick="closeModalOutside(event)">
-  <div class="modal">
-    <h3 id="modal-title">Nova Linha</h3>
-
-    <label>Roupa</label>
-    <div style="display:flex;gap:6px;margin-bottom:16px;">
-      <select id="m-roupa" style="flex:1;margin-bottom:0;"></select>
-      <button class="btn btn-ghost btn-sm" onclick="addRoupOption()" title="Adicionar opção">+</button>
-      <button class="btn btn-ghost btn-sm" onclick="openManageModal('roupa')" title="Gerenciar opções">✏️</button>
-    </div>
-
-    <label>Observação</label>
-    <input type="text" id="m-obs" placeholder="Ex: comprar na loja X, cor azul..." style="margin-bottom:16px;">
-
-    <label>Tamanho</label>
-    <div style="display:flex;gap:6px;margin-bottom:16px;">
-      <select id="m-tamanho" style="flex:1;margin-bottom:0;"></select>
-      <button class="btn btn-ghost btn-sm" onclick="addTamanhoOption()" title="Adicionar opção">+</button>
-      <button class="btn btn-ghost btn-sm" onclick="openManageModal('tamanho')" title="Gerenciar opções">✏️</button>
-    </div>
-
-    <label>Quantidade Total</label>
-    <input type="number" id="m-qtd" min="1" step="1" value="1" oninput="updatePriceInputs()">
-
-    <label>Preço por unidade ($ / unid.) — preencha individualmente</label>
-    <div class="price-list" id="price-list"></div>
-    <p style="font-size:12px;color:var(--text-muted);margin-bottom:16px;">Total: <strong id="m-total-preview">$ 0.00</strong></p>
-
-    <div class="modal-row">
+<header>
+  <div class="wrap">
+    <div class="brand">
+      <div class="dial"></div>
       <div>
-        <label>Qtd. já comprada</label>
-        <input type="number" id="m-qtd-comprada" min="0" step="1" value="0">
-      </div>
-      <div>
-        <label>Status</label>
-        <select id="m-status">
-          <option>Pendente</option>
-          <option>Comprado</option>
-          <option>Não tem</option>
-        </select>
+        <h1 class="display">Garagem</h1>
+        <p>Comparador de carros para decisão de compra</p>
       </div>
     </div>
-
-    <div class="modal-btns">
-      <button class="btn btn-ghost" onclick="closeModal()">Cancelar</button>
-      <button class="btn btn-primary" id="modal-save-btn" onclick="saveModal()">Salvar</button>
-    </div>
+    <nav class="tabs">
+      <button class="active" data-view="form" onclick="switchView('form')">Cadastrar</button>
+      <button data-view="list" onclick="switchView('list')">Carros cadastrados</button>
+    </nav>
   </div>
-</div>
+</header>
 
-<!-- Modal gerenciar opções -->
-<div class="modal-overlay" id="manage-overlay" onclick="closeManageOutside(event)">
-  <div class="modal">
-    <h3 id="manage-title">Gerenciar Opções</h3>
-    <div class="opt-list" id="opt-list"></div>
-    <button class="btn btn-secondary btn-sm" onclick="addManageItem()" style="margin-bottom:16px;">+ Nova opção</button>
-    <div class="modal-btns">
-      <button class="btn btn-ghost" onclick="closeManageModal()">Cancelar</button>
-      <button class="btn btn-primary" onclick="saveManageModal()">Salvar</button>
+<main>
+
+  <!-- ===== FORM VIEW ===== -->
+  <section id="view-form" class="view active">
+    <div class="panel">
+      <h2 id="form-title">Ficha do carro</h2>
+      <form id="carForm" onsubmit="return false;">
+        <input type="hidden" id="carId">
+        <div class="grid">
+          <div class="field">
+            <label for="f-marca">Marca</label>
+            <input type="text" id="f-marca" placeholder="Ex: Volkswagen" required>
+          </div>
+          <div class="field">
+            <label for="f-modelo">Modelo</label>
+            <input type="text" id="f-modelo" placeholder="Ex: Gol 1.6" required>
+          </div>
+          <div class="field">
+            <label for="f-ano">Ano</label>
+            <input type="number" id="f-ano" placeholder="Ex: 2019" min="1950" max="2100" required>
+          </div>
+          <div class="field">
+            <label for="f-valor">Valor (R$)</label>
+            <input type="number" id="f-valor" placeholder="Ex: 45000" min="0" step="0.01" required>
+          </div>
+
+          <div class="field">
+            <label>Banco de couro</label>
+            <div class="toggle-group" id="grp-couro">
+              <button type="button" class="sel-sim" data-val="sim" onclick="toggleGroup('grp-couro',this)">Sim</button>
+              <button type="button" class="sel-nao" data-val="nao" onclick="toggleGroup('grp-couro',this)">Não</button>
+            </div>
+          </div>
+          <div class="field">
+            <label>Automático</label>
+            <div class="toggle-group" id="grp-automatico">
+              <button type="button" class="sel-sim" data-val="sim" onclick="toggleGroup('grp-automatico',this)">Sim</button>
+              <button type="button" class="sel-nao" data-val="nao" onclick="toggleGroup('grp-automatico',this)">Não</button>
+            </div>
+          </div>
+
+          <div class="field">
+            <label>Mantém interesse no carro?</label>
+            <div class="toggle-group" id="grp-interesse">
+              <button type="button" class="sel-sim" data-val="sim" onclick="toggleGroup('grp-interesse',this)">Sim</button>
+              <button type="button" class="sel-nao" data-val="nao" onclick="toggleGroup('grp-interesse',this)">Não</button>
+              <button type="button" class="sel-avaliar" data-val="avaliar" onclick="toggleGroup('grp-interesse',this)">Avaliar</button>
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="f-telefone">Telefone de contato</label>
+            <input type="tel" id="f-telefone" placeholder="Ex: 31999998888">
+          </div>
+
+          <div class="field span2">
+            <label for="f-link">Link do anúncio</label>
+            <input type="url" id="f-link" placeholder="https://...">
+          </div>
+
+          <div class="field span2">
+            <label for="f-obs">Observações</label>
+            <textarea id="f-obs" placeholder="Detalhes, estado de conservação, revisões, negociação..."></textarea>
+          </div>
+        </div>
+
+        <div class="actions-row">
+          <button class="btn btn-primary" onclick="saveCar()">Salvar carro</button>
+          <button class="btn btn-ghost" onclick="resetForm()">Limpar formulário</button>
+        </div>
+      </form>
     </div>
-  </div>
-</div>
+  </section>
 
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-  import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+  <!-- ===== LIST VIEW ===== -->
+  <section id="view-list" class="view">
+    <div class="panel">
+      <h2>Filtros <span class="n mono" id="filter-count">0</span></h2>
+      <div class="filters-grid">
+        <div class="field">
+          <label>Marca</label>
+          <input type="text" id="ft-marca" placeholder="Buscar marca" oninput="renderList()">
+        </div>
+        <div class="field">
+          <label>Modelo</label>
+          <input type="text" id="ft-modelo" placeholder="Buscar modelo" oninput="renderList()">
+        </div>
+        <div class="field">
+          <label>Ano mínimo</label>
+          <input type="number" id="ft-ano-min" placeholder="Ex: 2015" oninput="renderList()">
+        </div>
+        <div class="field">
+          <label>Ano máximo</label>
+          <input type="number" id="ft-ano-max" placeholder="Ex: 2024" oninput="renderList()">
+        </div>
+        <div class="field">
+          <label>Valor mínimo</label>
+          <input type="number" id="ft-valor-min" placeholder="Ex: 20000" oninput="renderList()">
+        </div>
+        <div class="field">
+          <label>Valor máximo</label>
+          <input type="number" id="ft-valor-max" placeholder="Ex: 60000" oninput="renderList()">
+        </div>
+        <div class="field">
+          <label>Banco de couro</label>
+          <select id="ft-couro" onchange="renderList()">
+            <option value="">Todos</option>
+            <option value="sim">Sim</option>
+            <option value="nao">Não</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Automático</label>
+          <select id="ft-automatico" onchange="renderList()">
+            <option value="">Todos</option>
+            <option value="sim">Sim</option>
+            <option value="nao">Não</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Interesse</label>
+          <select id="ft-interesse" onchange="renderList()">
+            <option value="">Todos</option>
+            <option value="sim">Sim</option>
+            <option value="nao">Não</option>
+            <option value="avaliar">Avaliar</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Ordenar por</label>
+          <select id="ft-order" onchange="renderList()">
+            <option value="recentes">Mais recentes</option>
+            <option value="valor-asc">Valor (menor→maior)</option>
+            <option value="valor-desc">Valor (maior→menor)</option>
+            <option value="ano-desc">Ano (mais novo)</option>
+            <option value="ano-asc">Ano (mais antigo)</option>
+          </select>
+        </div>
+      </div>
+      <div class="filters-summary" id="filters-summary"></div>
+      <div class="actions-row">
+        <button class="btn btn-ghost" onclick="clearFilters()">Limpar filtros</button>
+      </div>
+    </div>
 
-  const firebaseConfig = {
-    apiKey: "AIzaSyAfncNiISW8gBoq8rZvSJfobcaj9OT0eAM",
-    authDomain: "enxoval-66eb3.firebaseapp.com",
-    databaseURL: "https://enxoval-66eb3-default-rtdb.firebaseio.com",
-    projectId: "enxoval-66eb3",
-    storageBucket: "enxoval-66eb3.firebasestorage.app",
-    messagingSenderId: "117302135272",
-    appId: "1:117302135272:web:5d7fd63cde828820c83c5d"
-  };
+    <div id="car-list-container"></div>
+  </section>
 
-  const app = initializeApp(firebaseConfig);
-  const db  = getDatabase(app);
+</main>
 
-  let rows        = [];
-  let roupaOpts   = ['Body', 'Macacão'];
-  let tamanhoOpts = ['6 a 9 meses', '9 a 12 meses'];
-  let editingId   = null;
-  let manageType  = null;
+<div class="toast" id="toast"></div>
 
-  onValue(ref(db, 'enxoval'), (snapshot) => {
-    const data = snapshot.val() || {};
-    rows        = Object.values(data.rows || {});
-    roupaOpts   = data.roupaOpts   || ['Body', 'Macacão'];
-    tamanhoOpts = data.tamanhoOpts || ['6 a 9 meses', '9 a 12 meses'];
-    renderAll();
-    hideLoading();
-    flashUpdate();
-  });
+<script>
+  const STORAGE_KEY = 'garagem_carros_v1';
+  let cars = [];
 
-  function saveData() {
-    const rowsObj = {};
-    rows.forEach(r => { rowsObj[r.id] = r; });
-    set(ref(db, 'enxoval'), { rows: rowsObj, roupaOpts, tamanhoOpts });
+  function loadCars(){
+    try{
+      const raw = localStorage.getItem(STORAGE_KEY);
+      cars = raw ? JSON.parse(raw) : [];
+    }catch(e){
+      cars = [];
+    }
+  }
+  function persistCars(){
+    try{
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(cars));
+    }catch(e){
+      showToast('Não foi possível salvar. Armazenamento indisponível.');
+    }
   }
 
-  function hideLoading() {
-    const el = document.getElementById('loading-overlay');
-    if (el) { el.classList.add('hide'); setTimeout(() => el.remove(), 500); }
+  function switchView(view){
+    document.querySelectorAll('nav.tabs button').forEach(b=>b.classList.toggle('active', b.dataset.view===view));
+    document.getElementById('view-form').classList.toggle('active', view==='form');
+    document.getElementById('view-list').classList.toggle('active', view==='list');
+    if(view==='list') renderList();
   }
 
-  function flashUpdate() {
-    const el = document.getElementById('update-label');
-    el.textContent = 'Atualizado ✓';
-    setTimeout(() => { el.textContent = 'Sincronizado'; }, 2000);
+  function toggleGroup(groupId, btn){
+    const group = document.getElementById(groupId);
+    group.querySelectorAll('button').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    group.dataset.value = btn.dataset.val;
+  }
+  function getGroupValue(groupId){
+    return document.getElementById(groupId).dataset.value || '';
+  }
+  function setGroupValue(groupId, val){
+    const group = document.getElementById(groupId);
+    group.querySelectorAll('button').forEach(b=>{
+      const active = b.dataset.val === val;
+      b.classList.toggle('active', active);
+    });
+    group.dataset.value = val || '';
   }
 
-  window.uid = () => '_' + Math.random().toString(36).substr(2,9);
-
-  window.fmtUSD = n => '$ ' + Number(n||0).toFixed(2).replace('.', ',');
-
-  window.calcRowTotal = row => {
-    const prices = row.prices || [];
-    return prices.reduce((a, p) => a + (parseFloat(p)||0), 0);
-  };
-
-  window.esc = str => { const d = document.createElement('div'); d.textContent = str||''; return d.innerHTML; };
-
-  function renderAll() {
-    populateFilterSelects();
-    renderTable();
+  function resetForm(){
+    document.getElementById('carId').value = '';
+    document.getElementById('f-marca').value = '';
+    document.getElementById('f-modelo').value = '';
+    document.getElementById('f-ano').value = '';
+    document.getElementById('f-valor').value = '';
+    document.getElementById('f-telefone').value = '';
+    document.getElementById('f-link').value = '';
+    document.getElementById('f-obs').value = '';
+    setGroupValue('grp-couro','');
+    setGroupValue('grp-automatico','');
+    setGroupValue('grp-interesse','');
+    document.getElementById('form-title').textContent = 'Ficha do carro';
   }
 
-  function populateFilterSelects() {
-    const fr = document.getElementById('filter-roupa');
-    const ft = document.getElementById('filter-tamanho');
-    const cur_r = fr.value, cur_t = ft.value;
-    fr.innerHTML = '<option value="">Todas</option>';
-    ft.innerHTML = '<option value="">Todos</option>';
-    roupaOpts.forEach(o => { const op=document.createElement('option'); op.value=o; op.text=o; fr.appendChild(op); });
-    tamanhoOpts.forEach(o => { const op=document.createElement('option'); op.value=o; op.text=o; ft.appendChild(op); });
-    fr.value = cur_r; ft.value = cur_t;
-    syncModalSelects();
+  function saveCar(){
+    const marca = document.getElementById('f-marca').value.trim();
+    const modelo = document.getElementById('f-modelo').value.trim();
+    const ano = document.getElementById('f-ano').value;
+    const valor = document.getElementById('f-valor').value;
+
+    if(!marca || !modelo || !ano || !valor){
+      showToast('Preencha marca, modelo, ano e valor.');
+      return;
+    }
+
+    const couro = getGroupValue('grp-couro') || 'nao';
+    const automatico = getGroupValue('grp-automatico') || 'nao';
+    const interesse = getGroupValue('grp-interesse') || 'avaliar';
+    const telefone = document.getElementById('f-telefone').value.trim();
+    const link = document.getElementById('f-link').value.trim();
+    const obs = document.getElementById('f-obs').value.trim();
+
+    const id = document.getElementById('carId').value;
+
+    if(id){
+      const car = cars.find(c=>c.id===id);
+      if(car){
+        Object.assign(car, {marca, modelo, ano:Number(ano), valor:Number(valor), couro, automatico, interesse, telefone, link, obs});
+      }
+      showToast('Carro atualizado.');
+    }else{
+      cars.unshift({
+        id: 'c_'+Date.now()+'_'+Math.random().toString(36).slice(2,7),
+        marca, modelo, ano:Number(ano), valor:Number(valor),
+        couro, automatico, interesse, telefone, link, obs,
+        createdAt: Date.now()
+      });
+      showToast('Carro cadastrado.');
+    }
+
+    persistCars();
+    resetForm();
+    switchView('list');
   }
 
-  function syncModalSelects() {
-    const mr = document.getElementById('m-roupa');
-    const mt = document.getElementById('m-tamanho');
-    const vr = mr.value, vt = mt.value;
-    mr.innerHTML = ''; roupaOpts.forEach(o => { const op=document.createElement('option'); op.value=o; op.text=o; mr.appendChild(op); });
-    mt.innerHTML = ''; tamanhoOpts.forEach(o => { const op=document.createElement('option'); op.value=o; op.text=o; mt.appendChild(op); });
-    if (vr) mr.value = vr; if (vt) mt.value = vt;
+  function editCar(id){
+    const car = cars.find(c=>c.id===id);
+    if(!car) return;
+    document.getElementById('carId').value = car.id;
+    document.getElementById('f-marca').value = car.marca;
+    document.getElementById('f-modelo').value = car.modelo;
+    document.getElementById('f-ano').value = car.ano;
+    document.getElementById('f-valor').value = car.valor;
+    document.getElementById('f-telefone').value = car.telefone || '';
+    document.getElementById('f-link').value = car.link || '';
+    document.getElementById('f-obs').value = car.obs || '';
+    setGroupValue('grp-couro', car.couro);
+    setGroupValue('grp-automatico', car.automatico);
+    setGroupValue('grp-interesse', car.interesse);
+    document.getElementById('form-title').textContent = 'Editando: ' + car.marca + ' ' + car.modelo;
+    switchView('form');
+    window.scrollTo({top:0, behavior:'smooth'});
   }
 
-  function renderTable() {
-    const f = {
-      roupa:   document.getElementById('filter-roupa').value,
-      status:  document.getElementById('filter-status').value,
-      tamanho: document.getElementById('filter-tamanho').value,
+  function deleteCar(id){
+    const car = cars.find(c=>c.id===id);
+    if(!car) return;
+    if(!confirm('Excluir o registro de "'+car.marca+' '+car.modelo+'"? Essa ação não pode ser desfeita.')) return;
+    cars = cars.filter(c=>c.id!==id);
+    persistCars();
+    renderList();
+    showToast('Carro excluído.');
+  }
+
+  function onlyDigits(str){ return (str||'').replace(/\D/g,''); }
+
+  function phoneLinks(telefone){
+    const digits = onlyDigits(telefone);
+    if(!digits) return null;
+    const withCountry = digits.length <= 11 ? '55'+digits : digits;
+    return {
+      tel: 'tel:+' + withCountry,
+      wa: 'https://wa.me/' + withCountry
     };
-    const filtered = rows.filter(r => {
-      if (f.roupa   && r.roupa   !== f.roupa)   return false;
-      if (f.status  && r.status  !== f.status)  return false;
-      if (f.tamanho && r.tamanho !== f.tamanho) return false;
+  }
+
+  function formatCurrency(v){
+    return Number(v).toLocaleString('pt-BR', {style:'currency', currency:'BRL', maximumFractionDigits:0});
+  }
+
+  function interesseLabel(v){
+    return v==='sim' ? 'Sim' : v==='nao' ? 'Não' : 'Avaliar';
+  }
+
+  function applyFilters(list){
+    const marca = document.getElementById('ft-marca').value.trim().toLowerCase();
+    const modelo = document.getElementById('ft-modelo').value.trim().toLowerCase();
+    const anoMin = document.getElementById('ft-ano-min').value;
+    const anoMax = document.getElementById('ft-ano-max').value;
+    const valorMin = document.getElementById('ft-valor-min').value;
+    const valorMax = document.getElementById('ft-valor-max').value;
+    const couro = document.getElementById('ft-couro').value;
+    const automatico = document.getElementById('ft-automatico').value;
+    const interesse = document.getElementById('ft-interesse').value;
+    const order = document.getElementById('ft-order').value;
+
+    let out = list.filter(c=>{
+      if(marca && !c.marca.toLowerCase().includes(marca)) return false;
+      if(modelo && !c.modelo.toLowerCase().includes(modelo)) return false;
+      if(anoMin && c.ano < Number(anoMin)) return false;
+      if(anoMax && c.ano > Number(anoMax)) return false;
+      if(valorMin && c.valor < Number(valorMin)) return false;
+      if(valorMax && c.valor > Number(valorMax)) return false;
+      if(couro && c.couro !== couro) return false;
+      if(automatico && c.automatico !== automatico) return false;
+      if(interesse && c.interesse !== interesse) return false;
       return true;
     });
 
-    const tbody = document.getElementById('table-body');
-    tbody.innerHTML = '';
-    document.getElementById('empty-state').style.display = filtered.length === 0 ? 'block' : 'none';
+    switch(order){
+      case 'valor-asc': out.sort((a,b)=>a.valor-b.valor); break;
+      case 'valor-desc': out.sort((a,b)=>b.valor-a.valor); break;
+      case 'ano-desc': out.sort((a,b)=>b.ano-a.ano); break;
+      case 'ano-asc': out.sort((a,b)=>a.ano-b.ano); break;
+      default: out.sort((a,b)=>b.createdAt-a.createdAt);
+    }
+    return out;
+  }
 
-    filtered.forEach((row, idx) => {
-      const total = calcRowTotal(row);
-      const prices = row.prices || [];
-      const qtd = parseInt(row.qtd)||0;
-      const qtdComprada = parseInt(row.qtdComprada)||0;
-      const statusKey = (row.status||'Pendente').replace(/\s/g,'-');
+  function clearFilters(){
+    ['ft-marca','ft-modelo','ft-ano-min','ft-ano-max','ft-valor-min','ft-valor-max'].forEach(id=>document.getElementById(id).value='');
+    ['ft-couro','ft-automatico','ft-interesse'].forEach(id=>document.getElementById(id).value='');
+    document.getElementById('ft-order').value='recentes';
+    renderList();
+  }
 
-      // Preços resumidos: mostra cada valor por unidade
-      const precoResumo = prices.length > 0
-        ? prices.map((p,i) => `<span style="font-size:11px;color:var(--text-muted);">Un.${i+1}:</span> ${fmtUSD(p)}`).join(' &nbsp;')
-        : '—';
+  function renderList(){
+    const container = document.getElementById('car-list-container');
+    const filtered = applyFilters(cars);
 
-      const tr = document.createElement('tr');
-      tr.innerHTML = `
-        <td style="color:var(--text-muted);font-size:12px;">${idx+1}</td>
-        <td><strong>${esc(row.roupa)}</strong></td>
-        <td style="color:var(--text-muted);font-size:12px;font-style:italic;max-width:160px;">${esc(row.obs||'')}</td>
-        <td style="color:var(--text-muted);font-size:13px;">${esc(row.tamanho)}</td>
-        <td style="text-align:center;">${qtd}</td>
-        <td style="font-size:12px;line-height:1.8;">${precoResumo}</td>
-        <td class="total-cell">${fmtUSD(total)}</td>
-        <td class="qtd-comprada-cell" style="text-align:center;">${qtdComprada} <span style="color:var(--text-muted);font-weight:400;">/ ${qtd}</span></td>
-        <td><span class="status-badge status-${statusKey}">${esc(row.status)}</span></td>
-        <td>
-          <div style="display:flex;gap:6px;">
-            <button class="btn btn-ghost btn-sm" onclick="openEditModal('${row.id}')">✏️</button>
-            <button class="btn btn-danger btn-sm" onclick="deleteRow('${row.id}')">🗑</button>
+    document.getElementById('filter-count').textContent = cars.length;
+    document.getElementById('filters-summary').textContent =
+      filtered.length === cars.length
+        ? `Mostrando todos os ${cars.length} carro(s) cadastrado(s).`
+        : `Mostrando ${filtered.length} de ${cars.length} carro(s) cadastrado(s).`;
+
+    if(cars.length === 0){
+      container.innerHTML = `
+        <div class="panel">
+          <div class="empty">
+            <div class="dial-big">🚗</div>
+            <p>Nenhum carro cadastrado ainda.</p>
+            <p style="font-size:13px;">Vá até a aba <strong>Cadastrar</strong> para incluir o primeiro.</p>
           </div>
-        </td>
-      `;
-      tbody.appendChild(tr);
-    });
-    updateSummary();
+        </div>`;
+      return;
+    }
+
+    if(filtered.length === 0){
+      container.innerHTML = `
+        <div class="panel">
+          <div class="empty">
+            <div class="dial-big">🔍</div>
+            <p>Nenhum carro corresponde aos filtros atuais.</p>
+          </div>
+        </div>`;
+      return;
+    }
+
+    container.innerHTML = `<div class="car-list">${filtered.map(renderCarCard).join('')}</div>`;
   }
 
-  function updateSummary() {
-    const totalItens  = rows.reduce((a,r) => a + (parseInt(r.qtd)||0), 0);
-    const valorTotal  = rows.reduce((a,r) => a + calcRowTotal(r), 0);
-    const comprado    = rows.filter(r=>r.status==='Comprado').reduce((a,r) => a + calcRowTotal(r), 0);
-    const pendente    = rows.filter(r=>r.status==='Pendente').reduce((a,r) => a + calcRowTotal(r), 0);
-    const qtdComprada = rows.reduce((a,r) => a + (parseInt(r.qtdComprada)||0), 0);
-    document.getElementById('sum-total-itens').textContent  = totalItens;
-    document.getElementById('sum-valor-total').textContent  = fmtUSD(valorTotal);
-    document.getElementById('sum-comprado').textContent     = fmtUSD(comprado);
-    document.getElementById('sum-pendente').textContent     = fmtUSD(pendente);
-    document.getElementById('sum-qtd-comprada').textContent = qtdComprada;
+  function renderCarCard(c){
+    const links = phoneLinks(c.telefone);
+    const gaugeClass = c.interesse === 'sim' ? 'sim' : c.interesse === 'nao' ? 'nao' : 'avaliar';
+
+    return `
+      <div class="car-card">
+        <div class="gauge ${gaugeClass}"><span>${interesseLabel(c.interesse)}</span></div>
+        <div class="car-main">
+          <h3>${escapeHtml(c.marca)} ${escapeHtml(c.modelo)}</h3>
+          <div class="sub">Ano ${c.ano} · <span class="price">${formatCurrency(c.valor)}</span></div>
+          <div class="tag-row">
+            <span class="tag ${c.couro==='sim'?'on':''}">Banco de couro: ${c.couro==='sim'?'Sim':'Não'}</span>
+            <span class="tag ${c.automatico==='sim'?'on':''}">Automático: ${c.automatico==='sim'?'Sim':'Não'}</span>
+            ${c.telefone ? `<span class="tag">Tel: ${escapeHtml(c.telefone)}</span>` : ''}
+          </div>
+          ${c.obs ? `<div class="obs-preview">"${escapeHtml(c.obs)}"</div>` : ''}
+        </div>
+        <div class="car-actions">
+          ${links ? `<a class="icon-btn call" href="${links.tel}">📞 Ligar</a>` : ''}
+          ${links ? `<a class="icon-btn wa" href="${links.wa}" target="_blank" rel="noopener">💬 WhatsApp</a>` : ''}
+          ${c.link ? `<a class="icon-btn link" href="${escapeAttr(c.link)}" target="_blank" rel="noopener">🔗 Ver anúncio</a>` : ''}
+          <button class="icon-btn edit" onclick="editCar('${c.id}')">✏️ Editar</button>
+          <button class="icon-btn edit" style="color:var(--red)" onclick="deleteCar('${c.id}')">🗑️ Excluir</button>
+        </div>
+      </div>`;
   }
 
-  // ─── Price inputs ─────────────────────────────────────────────────────────────
-  window.updatePriceInputs = () => {
-    const qtd = parseInt(document.getElementById('m-qtd').value)||1;
-    const list = document.getElementById('price-list');
-    const existing = list.querySelectorAll('input');
-    const currentVals = Array.from(existing).map(i => i.value);
-
-    list.innerHTML = '';
-    for (let i = 0; i < qtd; i++) {
-      const row = document.createElement('div');
-      row.className = 'price-row';
-      row.innerHTML = `
-        <span>Un. ${i+1}</span>
-        <input type="number" min="0" step="0.01" placeholder="0.00" value="${currentVals[i]||''}" oninput="updateTotalPreview()">
-      `;
-      list.appendChild(row);
-    }
-    updateTotalPreview();
-  };
-
-  window.updateTotalPreview = () => {
-    const inputs = document.getElementById('price-list').querySelectorAll('input');
-    const total = Array.from(inputs).reduce((a,i) => a + (parseFloat(i.value)||0), 0);
-    document.getElementById('m-total-preview').textContent = fmtUSD(total);
-  };
-
-  function getPricesFromInputs() {
-    const inputs = document.getElementById('price-list').querySelectorAll('input');
-    return Array.from(inputs).map(i => parseFloat(i.value)||0);
+  function escapeHtml(str){
+    return (str||'').replace(/[&<>"']/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+  }
+  function escapeAttr(str){
+    return (str||'').replace(/"/g,'&quot;');
   }
 
-  // ─── Modal principal ─────────────────────────────────────────────────────────
-  window.openAddModal = () => {
-    editingId = null;
-    document.getElementById('modal-title').textContent = 'Nova Linha';
-    document.getElementById('modal-save-btn').textContent = 'Adicionar';
-    syncModalSelects();
-    document.getElementById('m-obs').value           = '';
-    document.getElementById('m-qtd').value          = '1';
-    document.getElementById('m-qtd-comprada').value = '0';
-    document.getElementById('m-status').value       = 'Pendente';
-    updatePriceInputs();
-    document.getElementById('modal-overlay').classList.add('open');
-  };
-
-  window.openEditModal = id => {
-    const row = rows.find(r => r.id === id);
-    if (!row) return;
-    editingId = id;
-    document.getElementById('modal-title').textContent = 'Editar Item';
-    document.getElementById('modal-save-btn').textContent = 'Salvar';
-    syncModalSelects();
-    document.getElementById('m-roupa').value          = row.roupa;
-    document.getElementById('m-obs').value            = row.obs || '';
-    document.getElementById('m-tamanho').value        = row.tamanho;
-    document.getElementById('m-qtd').value            = row.qtd || 1;
-    document.getElementById('m-qtd-comprada').value   = row.qtdComprada || 0;
-    document.getElementById('m-status').value         = row.status;
-
-    // Build price inputs with saved values
-    const qtd = parseInt(row.qtd)||1;
-    const prices = row.prices || [];
-    const list = document.getElementById('price-list');
-    list.innerHTML = '';
-    for (let i = 0; i < qtd; i++) {
-      const r = document.createElement('div');
-      r.className = 'price-row';
-      r.innerHTML = `
-        <span>Un. ${i+1}</span>
-        <input type="number" min="0" step="0.01" placeholder="0.00" value="${prices[i]||''}" oninput="updateTotalPreview()">
-      `;
-      list.appendChild(r);
-    }
-    updateTotalPreview();
-    document.getElementById('modal-overlay').classList.add('open');
-  };
-
-  window.closeModal = () => document.getElementById('modal-overlay').classList.remove('open');
-  window.closeModalOutside = e => { if (e.target === document.getElementById('modal-overlay')) closeModal(); };
-
-  window.saveModal = () => {
-    const roupa      = document.getElementById('m-roupa').value;
-    const obs        = document.getElementById('m-obs').value;
-    const tamanho    = document.getElementById('m-tamanho').value;
-    const qtd        = parseInt(document.getElementById('m-qtd').value)||1;
-    const qtdComprada= parseInt(document.getElementById('m-qtd-comprada').value)||0;
-    const status     = document.getElementById('m-status').value;
-    const prices     = getPricesFromInputs();
-
-    if (editingId) {
-      const row = rows.find(r => r.id === editingId);
-      if (row) { row.roupa=roupa; row.obs=obs; row.tamanho=tamanho; row.qtd=qtd; row.qtdComprada=qtdComprada; row.status=status; row.prices=prices; }
-    } else {
-      rows.push({ id: uid(), roupa, obs, tamanho, qtd, qtdComprada, status, prices });
-    }
-    saveData();
-    closeModal();
-  };
-
-  window.deleteRow = id => {
-    if (!confirm('Remover este item?')) return;
-    rows = rows.filter(r => r.id !== id);
-    saveData();
-  };
-
-  // ─── Adicionar opção rápida ───────────────────────────────────────────────────
-  window.addRoupOption = () => {
-    const v = prompt('Nova opção de roupa:');
-    if (!v || !v.trim()) return;
-    const val = v.trim();
-    if (!roupaOpts.includes(val)) {
-      roupaOpts.push(val);
-      saveData(); syncModalSelects(); populateFilterSelects();
-      document.getElementById('m-roupa').value = val;
-    }
-  };
-
-  window.addTamanhoOption = () => {
-    const v = prompt('Novo tamanho:');
-    if (!v || !v.trim()) return;
-    const val = v.trim();
-    if (!tamanhoOpts.includes(val)) {
-      tamanhoOpts.push(val);
-      saveData(); syncModalSelects(); populateFilterSelects();
-      document.getElementById('m-tamanho').value = val;
-    }
-  };
-
-  // ─── Modal gerenciar opções ───────────────────────────────────────────────────
-  window.openManageModal = type => {
-    manageType = type;
-    const opts = type === 'roupa' ? roupaOpts : tamanhoOpts;
-    document.getElementById('manage-title').textContent =
-      type === 'roupa' ? 'Gerenciar Tipos de Roupa' : 'Gerenciar Tamanhos';
-    renderOptList(opts);
-    document.getElementById('manage-overlay').classList.add('open');
-  };
-
-  function renderOptList(opts) {
-    const list = document.getElementById('opt-list');
-    list.innerHTML = '';
-    opts.forEach((opt, idx) => {
-      const item = document.createElement('div');
-      item.className = 'opt-item';
-      item.innerHTML = `
-        <input type="text" value="${esc(opt)}" data-idx="${idx}" placeholder="Nome da opção">
-        <button class="btn btn-danger btn-sm" onclick="removeManageItem(${idx})">🗑</button>
-      `;
-      list.appendChild(item);
-    });
+  let toastTimer;
+  function showToast(msg){
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(()=>t.classList.remove('show'), 2600);
   }
 
-  window.addManageItem = () => {
-    const opts = manageType === 'roupa' ? roupaOpts : tamanhoOpts;
-    opts.push('');
-    renderOptList(opts);
-    const inputs = document.getElementById('opt-list').querySelectorAll('input');
-    if (inputs.length) inputs[inputs.length-1].focus();
-  };
-
-  window.removeManageItem = idx => {
-    const opts = manageType === 'roupa' ? roupaOpts : tamanhoOpts;
-    opts.splice(idx, 1);
-    renderOptList(opts);
-  };
-
-  window.saveManageModal = () => {
-    const inputs = document.getElementById('opt-list').querySelectorAll('input');
-    const newOpts = Array.from(inputs).map(i => i.value.trim()).filter(v => v !== '');
-    if (manageType === 'roupa') roupaOpts = newOpts;
-    else tamanhoOpts = newOpts;
-    saveData(); syncModalSelects(); populateFilterSelects();
-    closeManageModal();
-  };
-
-  window.closeManageModal = () => document.getElementById('manage-overlay').classList.remove('open');
-  window.closeManageOutside = e => { if (e.target === document.getElementById('manage-overlay')) closeManageModal(); };
-
-  // ─── Filtros ─────────────────────────────────────────────────────────────────
-  window.clearFilters = () => {
-    document.getElementById('filter-roupa').value   = '';
-    document.getElementById('filter-status').value  = '';
-    document.getElementById('filter-tamanho').value = '';
-    renderTable();
-  };
-  window.renderTable = renderTable;
-
-  // ─── Export CSV ──────────────────────────────────────────────────────────────
-  window.exportCSV = () => {
-    const header = ['Roupa','Observação','Tamanho','Qtd.Total','Total ($)','Qtd.Comprada','Status'];
-    const lines  = rows.map(r => [
-      r.roupa, r.obs||'', r.tamanho, r.qtd,
-      calcRowTotal(r).toFixed(2),
-      r.qtdComprada||0, r.status
-    ].map(c => `"${c}"`).join(';'));
-    const csv = '\uFEFF' + [header.join(';'), ...lines].join('\n');
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(new Blob([csv], {type:'text/csv;charset=utf-8'}));
-    a.download = 'enxoval-bebe.csv';
-    a.click();
-  };
+  // init
+  loadCars();
+  renderList();
 </script>
+
 </body>
 </html>
