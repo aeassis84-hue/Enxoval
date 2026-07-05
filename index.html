@@ -6,6 +6,8 @@
 <title>Garagem — Comparador de Carros</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
 <style>
   :root{
     --bg: #1b1f24;
@@ -56,7 +58,11 @@
   .brand h1{
     font-size:24px; margin:0; font-weight:700;
   }
-  .brand p{margin:0; color:var(--muted); font-size:12.5px; letter-spacing:0.08em;}
+  .brand p{margin:0; color:var(--muted); font-size:12.5px; letter-spacing:0.08em; display:flex; align-items:center; gap:8px; flex-wrap:wrap;}
+  .sync-badge{ font-size:11px; letter-spacing:0.04em; font-weight:600; padding:2px 8px; border-radius:20px; }
+  .sync-badge.sync-on{ color:var(--green); background:#123a24; }
+  .sync-badge.sync-off{ color:var(--muted); background:#2b3138; }
+  .sync-badge.sync-error{ color:var(--red); background:#3a1414; }
 
   nav.tabs{
     display:flex; gap:6px; background:var(--panel); padding:5px; border-radius:10px; border:1px solid var(--line);
@@ -220,7 +226,7 @@
       <div class="dial"></div>
       <div>
         <h1 class="display">Garagem</h1>
-        <p>Comparador de carros para decisão de compra</p>
+        <p>Comparador de carros para decisão de compra <span id="sync-badge" class="sync-badge sync-off">● conectando...</span></p>
       </div>
     </div>
     <nav class="tabs">
@@ -383,24 +389,46 @@
 <div class="toast" id="toast"></div>
 
 <script>
-  const STORAGE_KEY = 'garagem_carros_v1';
+  // ===== Firebase =====
+  const firebaseConfig = {
+    apiKey: "AIzaSyAfncNiISW8gBoq8rZvSJfobcaj9OTOeAM",
+    authDomain: "enxoval-66eb3.firebaseapp.com",
+    databaseURL: "https://enxoval-66eb3-default-rtdb.firebaseio.com",
+    projectId: "enxoval-66eb3",
+    storageBucket: "enxoval-66eb3.firebasestorage.app",
+    messagingSenderId: "117302135272",
+    appId: "1:117302135272:web:5d7fd63cde828820c83c5d"
+  };
+
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.database();
+  const carsRef = db.ref('carros_garagem');
+
   let cars = [];
 
-  function loadCars(){
-    try{
-      const raw = localStorage.getItem(STORAGE_KEY);
-      cars = raw ? JSON.parse(raw) : [];
-    }catch(e){
-      cars = [];
-    }
+  function setSyncBadge(state){
+    const el = document.getElementById('sync-badge');
+    el.classList.remove('sync-on','sync-off','sync-error');
+    if(state==='on'){ el.classList.add('sync-on'); el.textContent = '● sincronizado'; }
+    else if(state==='error'){ el.classList.add('sync-error'); el.textContent = '● sem conexão'; }
+    else { el.classList.add('sync-off'); el.textContent = '● conectando...'; }
   }
-  function persistCars(){
-    try{
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(cars));
-    }catch(e){
-      showToast('Não foi possível salvar. Armazenamento indisponível.');
-    }
-  }
+
+  // Escuta em tempo real: qualquer mudança no banco atualiza a tela sozinha,
+  // em qualquer dispositivo que esteja com a página aberta.
+  carsRef.on('value', (snapshot) => {
+    const data = snapshot.val() || {};
+    cars = Object.keys(data).map(id => ({ id, ...data[id] }));
+    setSyncBadge('on');
+    renderList();
+  }, (error) => {
+    setSyncBadge('error');
+    showToast('Não foi possível conectar ao banco de dados.');
+  });
+
+  db.ref('.info/connected').on('value', (snap)=>{
+    if(snap.val() === false) setSyncBadge('error');
+  });
 
   function switchView(view){
     document.querySelectorAll('nav.tabs button').forEach(b=>b.classList.toggle('active', b.dataset.view===view));
@@ -461,24 +489,20 @@
     const obs = document.getElementById('f-obs').value.trim();
 
     const id = document.getElementById('carId').value;
+    const payload = { marca, modelo, ano:Number(ano), valor:Number(valor), couro, automatico, interesse, telefone, link, obs };
 
     if(id){
-      const car = cars.find(c=>c.id===id);
-      if(car){
-        Object.assign(car, {marca, modelo, ano:Number(ano), valor:Number(valor), couro, automatico, interesse, telefone, link, obs});
-      }
-      showToast('Carro atualizado.');
+      carsRef.child(id).update(payload)
+        .then(()=> showToast('Carro atualizado.'))
+        .catch(()=> showToast('Erro ao atualizar. Verifique sua conexão.'));
     }else{
-      cars.unshift({
-        id: 'c_'+Date.now()+'_'+Math.random().toString(36).slice(2,7),
-        marca, modelo, ano:Number(ano), valor:Number(valor),
-        couro, automatico, interesse, telefone, link, obs,
-        createdAt: Date.now()
-      });
-      showToast('Carro cadastrado.');
+      payload.createdAt = Date.now();
+      const newRef = carsRef.push();
+      newRef.set(payload)
+        .then(()=> showToast('Carro cadastrado.'))
+        .catch(()=> showToast('Erro ao salvar. Verifique sua conexão.'));
     }
 
-    persistCars();
     resetForm();
     switchView('list');
   }
@@ -506,10 +530,9 @@
     const car = cars.find(c=>c.id===id);
     if(!car) return;
     if(!confirm('Excluir o registro de "'+car.marca+' '+car.modelo+'"? Essa ação não pode ser desfeita.')) return;
-    cars = cars.filter(c=>c.id!==id);
-    persistCars();
-    renderList();
-    showToast('Carro excluído.');
+    carsRef.child(id).remove()
+      .then(()=> showToast('Carro excluído.'))
+      .catch(()=> showToast('Erro ao excluir. Verifique sua conexão.'));
   }
 
   function onlyDigits(str){ return (str||'').replace(/\D/g,''); }
@@ -653,8 +676,8 @@
     toastTimer = setTimeout(()=>t.classList.remove('show'), 2600);
   }
 
-  // init
-  loadCars();
+  // init: a primeira renderização acontece automaticamente
+  // assim que o listener carsRef.on('value', ...) receber os dados do Firebase.
   renderList();
 </script>
 
